@@ -1,8 +1,7 @@
 # Two-factor Flask
 
-<div style="float:right">
-![QR Code](http://chart.apis.google.com/chart?cht=qr&chl=otpauth%3A%2F%2Ftotp%2FPOST%3Afoo%40localhost%3A5000%3Fsecret%ABCDEFGHIJK&chs=250x250)
-</div>
+<img alt="QR Code" src="http://chart.apis.google.com/chart?cht=qr&chl=otpauth%3A%2F%2Ftotp%2FPOST%3Afoo%40localhost%3A5000%3Fsecret%ABCDEFGHIJK&chs=250x250"
+style="float:right">
 
 ## Overview
 
