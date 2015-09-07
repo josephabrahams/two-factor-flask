@@ -1,7 +1,6 @@
 # Two-factor Flask
 
-<img alt="QR Code" src="http://chart.apis.google.com/chart?cht=qr&chl=otpauth%3A%2F%2Ftotp%2FPOST%3Afoo%40localhost%3A5000%3Fsecret%ABCDEFGHIJK&chs=250x250"
-style="float:right">
+![QR Code](http://chart.apis.google.com/chart?cht=qr&chs=250x250&chl=https%3A%2F%2Fgithub.com%2Fjosephabrahams%2Ftwo-factor-flask)
 
 ## Overview
 
