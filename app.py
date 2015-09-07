@@ -3,22 +3,19 @@ from functools import wraps
 from urllib.parse import urlencode
 import re
 
-from flask import Flask, abort, make_response, render_template, request
+from flask import Flask, jsonify, make_response, render_template, request
 import click
 import pyotp
 
 
 # CONFIG
 
-FLASK_ENV = environ.get('FLASK_ENV', 'production')
+AUTH_USERNAME = environ.get('AUTH_USERNAME', None)
+AUTH_PASSWORD = environ.get('AUTH_PASSWORD', None)
+DEBUG = environ.get('DEBUG', 'False').lower() == 'true'
+DEVEL = environ.get('DEVEL', 'False').lower() == 'true'
 PORT = environ.get('PORT', '8000')
 SECRET = environ.get('SECRET')
-APP_HOST = environ.get('APP_HOST')
-TOR_HOST = environ.get('TOR_HOST')
-AUTH_USERNAME = environ.get('AUTH_USERNAME', 'isl')
-AUTH_PASSWORD = environ.get('AUTH_PASSWORD', pyotp.random_base32())
-
-DEBUG = environ.get('DEBUG', 'False').lower() == 'true'
 
 
 class SettingError(Exception):
@@ -38,10 +35,7 @@ app.config.from_object(__name__)
 # AUTHENTICATION
 
 def check_auth(username, password):
-    """This function is called to check if a username /
-    password combination is valid.
-    """
-
+    """ Check if a username:password combo is valid. """
     totp = pyotp.TOTP(SECRET)
     code = totp.now()
 
@@ -50,9 +44,11 @@ def check_auth(username, password):
 
 
 def authenticate():
-    """Sends a 401 response that enables basic auth"""
-    response = make_response('', 401)
+    """ Sends a 401 response to enable basic auth """
+
+    response = make_response(jsonify(message='Bad credentials'), 401)
     response.headers['WWW-Authenticate'] = 'Basic realm="Login Required"'
+
     return response
 
 
@@ -68,43 +64,30 @@ def requires_auth(f):
 
 # ROUTES
 
-@app.route('/')
+
+@app.route('/', methods=['GET'])
 def index():
+    """ display the QR code """
+
     host = 'http://chart.apis.google.com/chart'
     query = {}
     query['cht'] = 'qr'
     query['chs'] = '250x250'
-    if request.host == APP_HOST:
-        query['chl'] = 'http://{}/'.format(TOR_HOST)
-    elif request.host == TOR_HOST:
-        query['chl'] = 'otpauth://totp/POST:{}@{}/apply/?secret={}'\
-            .format(AUTH_USERNAME, APP_HOST, SECRET)
-    else:
-        abort(404)
+    query['chl'] = 'otpauth://totp/POST:{}@{}?secret={}'\
+        .format(AUTH_USERNAME, request.host, SECRET)
     url = '{}?{}'.format(host, urlencode(query))
+
     return render_template('index.html', url=url)
 
 
-def clean_application(request):
-    data = request.data
-    print(dir(data))
-    if True:
-        response = "You're hired!"
-    else:
-        pass
-    return(response)
-
-
-@app.route('/apply', methods=['POST'])
+@app.route('/', methods=['POST'])
 @requires_auth
 def apply_no_slash():
-    return(clean_application(request))
+    """ if authenticated, process the POST request """
 
-
-@app.route('/apply/', methods=['POST'])
-@requires_auth
-def apply():
-    return(clean_application(request))
+    response = jsonify(message='Success',
+                       request=request.get_json(force=True))
+    return(response)
 
 
 # USE CLICK TO CREATE A CLI
@@ -123,7 +106,7 @@ def generatesecret():
 
 @cli.command(help='Starts a lightweight development server')
 def runserver():
-    if FLASK_ENV == 'development':
+    if DEVEL:
         app.run()
     else:
         """
