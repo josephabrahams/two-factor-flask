@@ -21,6 +21,13 @@ If you successfully logged in, you should see a response that looks like:
 }
 ```
 
+## Demo
+
+Visit [two-factor-flask.herokuapp.com](https://two-factor-flask.herokuapp.com/):
+
+    curl --data '{"foo":"bar"}' -u two-factor-flask:{{ code }} https://two-factor-flask.herokuapp.com
+
+
 ## Development
 
 ### Requirements
