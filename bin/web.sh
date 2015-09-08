@@ -1,4 +1,4 @@
-# !/usr/bin/env bash
+# !/bin/bash
 
 if [[ (-n "$DEVEL") && ("`echo $DEVEL | tr '[A-Z]' '[a-z]'`" = "true") ]]; then
     # if $DEVEL is True then run the development server
@@ -13,5 +13,3 @@ else
         gunicorn --worker-class='egg:meinheld#gunicorn_worker' app:app --error-logfile -
     fi
 fi
-
-
