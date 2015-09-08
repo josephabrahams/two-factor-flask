@@ -64,7 +64,6 @@ def requires_auth(f):
 
 # ROUTES
 
-
 @app.route('/', methods=['GET'])
 def index():
     """ display the QR code """
