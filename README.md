@@ -6,9 +6,7 @@
 
 Use the QR code on the home page to authenticate with your two-factor device.
 
-Submit a POST request to `/` with a JSON payload using the
-two-factor code as your password.
-
+Submit a POST request to `/` with a JSON payload using the two-factor code as your username.
 
 If you successfully logged in, you should see a response that looks like:
 
@@ -25,8 +23,7 @@ If you successfully logged in, you should see a response that looks like:
 
 Visit [two-factor-flask.herokuapp.com](https://two-factor-flask.herokuapp.com/):
 
-    curl --data '{"foo":"bar"}' -u two-factor-flask:{{ code }} https://two-factor-flask.herokuapp.com
-
+    curl --data '{"foo":"bar"}' -u {{ code }}:'' https://two-factor-flask.herokuapp.com
 
 ## Development
 
@@ -38,8 +35,6 @@ Visit [two-factor-flask.herokuapp.com](https://two-factor-flask.herokuapp.com/):
 
     $ pip install -r requirements.txt
 
-    $ echo "AUTH_USERNAME=foo" >> .env
-    $ echo "AUTH_PASSWORD=bar" >> .env
     $ echo "DEBUG=True" >> .env
     $ echo "DEVEL=True" >> .env
     $ echo "PORT=5000" >> .env
@@ -49,6 +44,4 @@ Visit [two-factor-flask.herokuapp.com](https://two-factor-flask.herokuapp.com/):
 ### Local Development
 
     $ foreman start
-
-    $ # open the development server
     $ open http://localhost:5000

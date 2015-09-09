@@ -10,8 +10,6 @@ import pyotp
 
 # CONFIG
 
-AUTH_USERNAME = environ.get('AUTH_USERNAME', None)
-AUTH_PASSWORD = environ.get('AUTH_PASSWORD', None)
 DEBUG = environ.get('DEBUG', 'False').lower() == 'true'
 DEVEL = environ.get('DEVEL', 'False').lower() == 'true'
 PORT = environ.get('PORT', '8000')
@@ -39,8 +37,7 @@ def check_auth(username, password):
     totp = pyotp.TOTP(SECRET)
     code = totp.now()
 
-    return username == AUTH_USERNAME and \
-        password == code or password == AUTH_PASSWORD
+    return username == code
 
 
 def authenticate():
@@ -72,8 +69,7 @@ def index():
     query = {}
     query['cht'] = 'qr'
     query['chs'] = '250x250'
-    query['chl'] = 'otpauth://totp/POST:{}@{}?secret={}'\
-        .format(AUTH_USERNAME, request.host, SECRET)
+    query['chl'] = 'otpauth://totp/{}?secret={}'.format(request.host, SECRET)
     url = '{}?{}'.format(host, urlencode(query))
 
     return render_template('index.html', url=url)
