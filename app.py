@@ -62,7 +62,7 @@ def requires_auth(f):
 # ROUTES
 
 @app.route('/', methods=['GET'])
-def index():
+def index_get():
     """ display the QR code """
 
     host = 'http://chart.apis.google.com/chart'
@@ -77,12 +77,16 @@ def index():
 
 @app.route('/', methods=['POST'])
 @requires_auth
-def apply_no_slash():
+def index_post():
     """ if authenticated, process the POST request """
 
-    response = jsonify(message='Success',
-                       request=request.get_json(force=True))
-    return(response)
+    response = {}
+    response['message'] = 'Success'
+    data = request.get_json(silent=True, force=True)
+    if data:
+        response['request'] = data
+
+    return jsonify(response)
 
 
 # USE CLICK TO CREATE A CLI
