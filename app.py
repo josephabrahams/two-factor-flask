@@ -16,14 +16,6 @@ PORT = environ.get('PORT', '8000')
 SECRET = environ.get('SECRET')
 
 
-class SettingError(Exception):
-    pass
-
-if not SECRET.__len__() == 16 or not re.match('[A-Za-z0-9]+$', SECRET):
-    ex = SettingError('$SECRET must be a 16 character base32 encoded string.')
-    raise ex
-
-
 # CREATE THE APPLICATION
 
 app = Flask(__name__)
@@ -105,6 +97,9 @@ def generatesecret():
 
 @cli.command(help='Starts a lightweight development server')
 def runserver():
+    if not SECRET.__len__() == 16 or not re.match('[A-Za-z0-9]+$', SECRET):
+        raise Exception('$SECRET must be a 16 character base32 encoded string.')
+
     if DEVEL:
         app.run()
     else:
