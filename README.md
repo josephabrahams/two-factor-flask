@@ -4,26 +4,20 @@
 
 ## Overview
 
-Use the QR code on the home page to authenticate with your two-factor device.
-
-Submit a POST request to `/` with a JSON payload using the two-factor code as your username.
-
-If you successfully logged in, you should see a response that looks like:
+Use the QR code on the demo site to authenticate with your two-factor device.
+Use the form to submit the generated verification code and see the appropriate response.
 
 ```json
 {
-  "message": "Success",
-  "request": {
-    "foo": "bar"
-  }
+  "message": "Success"
 }
 ```
 
 ## Demo
 
-Visit [two-factor-flask.herokuapp.com](https://two-factor-flask.herokuapp.com/):
+Visit [two-factor-flask.herokuapp.com](https://two-factor-flask.herokuapp.com/).
 
-    curl --data '{"foo":"bar"}' -u {{ code }}:'' https://two-factor-flask.herokuapp.com
+    curl --data 'code=XXXXXX' https://two-factor-flask.herokuapp.com
 
 ## Development
 
@@ -38,7 +32,6 @@ Visit [two-factor-flask.herokuapp.com](https://two-factor-flask.herokuapp.com/):
     $ echo "DEBUG=True" >> .env
     $ echo "DEVEL=True" >> .env
     $ echo "PORT=5000" >> .env
-    $ echo "SECRET=`python app.py generatesecrete`" >> .env
     $ echo "WEB_CONCURRENCY=2" >> .env
 
 ### Local Development

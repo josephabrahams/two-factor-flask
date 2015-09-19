@@ -1,12 +1,88 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="icon" href="{{ url_for('static', filename='favicon.gif') }}">
         <meta charset="UTF-8">
-        <style>html { text-align: center; }</style>
-        <title>Two-factor Basic Auth Example</title>
+        <title>Two-factor Auth Example</title>
+        <link rel="icon" href="{{ url_for('static', filename='favicon.gif') }}">
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <style>
+            #alert {
+                display: none;
+                margin-bottom: 0;
+                width: 100%;
+            }
+            #qr {
+                background-size: cover;
+                padding-bottom: 100%;
+            }
+            @media (min-width: 768px) {
+                #title {
+                    margin-top: 0;
+                    font-size: 61px;
+                }
+            }
+            #form {
+                margin: 1.5em 0;
+                max-width: 25em;
+            }
+        </style>
     </head>
     <body>
-        <img alt="QR Code" height=250 width=250 src="{{ url }}">
+        <div class="container-fluid">
+            <div class="row">
+                <div id="alert" class="alert col-12-xs"role="alert">
+                    <div class="row">
+                        <div id="message" class="col-xs-12">
+                            &nbsp;
+                        </div>
+                    </div>
+                </div>
+                <div class="jumbotron">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-xs-4 col-md-3 col-md-offset-1">
+                                <div id="qr" style="background-image:url({{ url }});"></div>
+                            </div>
+                            <div class="col-xs-12 col-sm-8 col-md-7">
+                                <h1 id="title">Two-factor<br>Auth Example</h1>
+                                <form id="form" method="POST" action="/">
+                                    <div class="input-group">
+                                        <input id="code" name="code" type="number" min="0" max="999999" class="form-control" placeholder="Enter your access code...">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default" type="submit">Login</button>
+                                        </span>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script>
+            $alert = $('#alert');
+            $form = $('#form');
+            $message = $('#message');
+            $form.submit(function(event) {
+                event.preventDefault();
+                data = $form.serialize();
+                url = $form.attr( "action" );
+                $.post(url, data, function(data) {
+                    $message.html(data.message);
+                    $alert
+                        .removeClass('alert-danger')
+                        .addClass('alert-success')
+                        .slideDown();
+                })
+                .fail(function() {
+                    $message.html('Invalid code');
+                    $alert
+                        .removeClass('alert-success')
+                        .addClass('alert-danger')
+                        .slideDown();
+                })
+            });
+        </script>
     </body>
 </html>

@@ -1,10 +1,8 @@
 from os import environ
-from functools import wraps
 from urllib.parse import urlencode
 import re
 
-from flask import Flask, jsonify, make_response, render_template, request
-import click
+from flask import Flask, abort, jsonify, render_template, request
 import pyotp
 
 
@@ -12,94 +10,48 @@ import pyotp
 
 DEBUG = environ.get('DEBUG', 'False').lower() == 'true'
 DEVEL = environ.get('DEVEL', 'False').lower() == 'true'
-PORT = environ.get('PORT', '8000')
+PORT = environ.get('PORT', '5000')
 SECRET = environ.get('SECRET')
 
+if not SECRET.__len__() == 16 or not re.match('[A-Za-z0-9]+$', SECRET):
+    raise Exception('$SECRET must be a 16 character base32 encoded string.')
 
-# CREATE THE APPLICATION
+
+# CREATE THE APP
 
 app = Flask(__name__)
 app.config.from_object(__name__)
 
 
-# AUTHENTICATION
-
-def check_auth(username, password):
-    """ Check if a username:password combo is valid. """
-    totp = pyotp.TOTP(SECRET)
-    code = totp.now()
-
-    return username == code
-
-
-def authenticate():
-    """ Sends a 401 response to enable basic auth """
-
-    response = make_response(jsonify(message='Bad credentials'), 401)
-    response.headers['WWW-Authenticate'] = 'Basic realm="Login Required"'
-
-    return response
-
-
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-        return f(*args, **kwargs)
-    return decorated
-
-
 # ROUTES
 
-@app.route('/', methods=['GET'])
-def index_get():
-    """ display the QR code """
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    if request.method == 'POST':
+        """ process form submission """
+        totp = pyotp.TOTP(SECRET)
+        code = totp.now()
 
-    host = 'http://chart.apis.google.com/chart'
-    query = {}
-    query['cht'] = 'qr'
-    query['chs'] = '250x250'
-    query['chl'] = 'otpauth://totp/{}?secret={}'.format(request.host, SECRET)
-    url = '{}?{}'.format(host, urlencode(query))
+        if not request.form.get('code') == code:
+            abort(401)
 
-    return render_template('index.html', url=url)
+        return jsonify(message='Success')
 
+    else:
+        """ display the QR code """
+        host = 'http://chart.apis.google.com/chart'
+        query = {}
+        query['cht'] = 'qr'
+        query['chs'] = '250x250'
+        query['chl'] = 'otpauth://totp/{}?secret={}'.format(request.host, SECRET)
+        url = '{}?{}'.format(host, urlencode(query))
 
-@app.route('/', methods=['POST'])
-@requires_auth
-def index_post():
-    """ if authenticated, process the POST request """
-
-    response = {}
-    response['message'] = 'Success'
-    data = request.get_json(silent=True, force=True)
-    if data:
-        response['request'] = data
-
-    return jsonify(response)
+        return render_template('index.html', url=url)
 
 
-# USE CLICK TO CREATE A CLI
+# RUN THE APP
 
-@click.group(invoke_without_command=True)
-@click.pass_context
-def cli(ctx):
-    if ctx.invoked_subcommand is None:
-        runserver()
-
-
-@cli.command(help='Print a 16 character base32 secret')
-def generatesecret():
-    click.echo(pyotp.random_base32())
-
-
-@cli.command(help='Starts a lightweight development server')
-def runserver():
-    if not SECRET.__len__() == 16 or not re.match('[A-Za-z0-9]+$', SECRET):
-        raise Exception('$SECRET must be a 16 character base32 encoded string.')
-
+if __name__ == '__main__':
     if DEVEL:
         app.run()
     else:
@@ -110,6 +62,3 @@ def runserver():
         from meinheld import server, middleware
         server.listen(("0.0.0.0", int(PORT)))
         server.run(middleware.WebSocketMiddleware(app))
-
-if __name__ == '__main__':
-    cli()
